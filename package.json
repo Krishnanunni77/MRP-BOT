@@ -1,0 +1,18 @@
+{
+  "name": "mangalashery-roleplay-bot",
+  "version": "1.0.0",
+  "description": "Mangalashery RP Discord Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@discordjs/builders": "^1.13.1",
+    "@discordjs/rest": "^2.6.0",
+    "discord-api-types": "^0.38.40",
+    "discord.js": "^14.25.1"
+  }
+}
