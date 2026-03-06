@@ -34,7 +34,8 @@ module.exports = {
         announcements: '1478031526397612196',
         alerts: '1478031526397612197',
         server_status: '1478031526397612198',
-        whitelist_logs: '1478031527353778269'
+        whitelist_logs: '1478031527353778269',
+        patch_notes: '1478031526397612202'
     },
 
     BROADCAST_ALLOWED_ROLES: [
@@ -44,4 +45,5 @@ module.exports = {
         "1478031525948690559",
         '1478031525948690558'
     ]
+
 };
