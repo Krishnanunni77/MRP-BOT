@@ -55,6 +55,7 @@ module.exports = {
         whitelist_queries : '1478031526871433432',
         
         FOR_DOUBTS : '1478031526871433433',
+        mrp_admins_details : '1478031526871433433',
 
         
         
@@ -69,4 +70,5 @@ module.exports = {
     ]
 
 };
+
 
