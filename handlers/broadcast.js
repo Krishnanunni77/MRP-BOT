@@ -112,7 +112,7 @@ module.exports = async (interaction, client) => {
             .setColor('Blue')
             .setTitle('📢 Official Announcement')
             .setDescription(message)
-            .setFooter({ text: `Sent by ${interaction.user.tag}` })
+            .setFooter({ text: 'Sent by Mangalashery god' })
             .setTimestamp();
 
         await targetChannel.send({ embeds: [embed] });
@@ -124,5 +124,6 @@ module.exports = async (interaction, client) => {
             ephemeral: true
         });
     }
+
 
 };
