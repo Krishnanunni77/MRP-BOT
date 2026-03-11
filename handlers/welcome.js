@@ -45,7 +45,7 @@ module.exports = (client) => {
                 `<#1478031525957075149> | Unlock the full server by completing verification.\n\n` +
                 `<#1478031526632362028> | Please read the server rules carefully before proceeding.\n\n` +
                 `<#1478031526871433430> | Fill out your Whitelist form to join the action.\n\n` +
-                `<#1478031527026884733> | Hop into the Waiting VC after applying; staff is on the way!\n\n` +
+                `<#1478031527634800742> | Hop into the Waiting VC after applying; staff is on the way!\n\n` +
                 
                 `🏁 **The city is waiting for you!**`
             )
@@ -67,4 +67,5 @@ module.exports = (client) => {
 
 
 };
+
 
