@@ -24,10 +24,10 @@ module.exports = (client) => {
 
             const embed = new EmbedBuilder()
                 .setColor('Gold')
-                .setTitle('🎉 Welcome to Mangalashery RolePlay')
+                .setTitle('🎉 Welcome to MANGALASHERY ROLEPLAY')
                 .setDescription(
                 `Hey <@${member.id}> 👋\n\n` +
-                `Welcome to **Mangalashery RolePlay – GTA V RP Server** 🚗🔥\n\n` +
+                `Welcome to **MANGALASHERY ROLEPLAY – GTA V RP Server** 🚗🔥\n\n` +
                 
                 `You have been assigned the **Unverified** role.\n` +
                 `Please complete the verification process to unlock full access to the server.\n\n` +
@@ -50,7 +50,7 @@ module.exports = (client) => {
                 `🏁 **The city is waiting for you!**`
             )
                 .setImage('attachment://welcome.gif')
-                .setFooter({ text: 'Mangalashery RolePlay | GTA V RP Server' })
+                .setFooter({ text: 'MANGALASHERY ROLEPLAY | GTA V RP' })
                 .setTimestamp();
 
             await channel.send({
