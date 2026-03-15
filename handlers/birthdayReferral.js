@@ -167,17 +167,38 @@ function startBirthdayChecker(client) {
                 // Mark as notified today (reset next day)
                 birthdayRegistry.set(userId, { ...data, notifiedToday: true });
 
-                // Also announce in birthday channel
-                const bdayChannel = await guild.channels.fetch(config.BIRTHDAY_CHANNEL_ID).catch(() => null);
-                if (bdayChannel) {
-                    const announceEmbed = new EmbedBuilder()
-                        .setColor('#FF69B4')
-                        .setTitle('🎂 Happy Birthday!')
-                        .setDescription(`Everyone wish <@${userId}> a very Happy Birthday! 🎉🎁`)
-                        .setThumbnail(member.user.displayAvatarURL())
+                // 🎉 Announce in GENERAL channel with full MRP team wish
+                const generalChannel = await guild.channels.fetch(config.BROADCAST_CHANNELS.ɢᴇɴᴇʀᴀʟ).catch(() => null);
+                if (generalChannel) {
+                    const [dd, mm] = data.birthday.split('-');
+                    const wishEmbed = new EmbedBuilder()
+                        .setColor('#FFD700')
+                        .setTitle('🎂 Happy Birthday! 🎉')
+                        .setDescription(
+                            `╔══════════════════════════╗\n` +
+                            `🎊  **BIRTHDAY WISHES**  🎊\n` +
+                            `╚══════════════════════════╝\n\n` +
+                            `Hey <@${userId}> 🎂\n\n` +
+                            `**The entire MRP Team is wishing you a very\n` +
+                            `Happy Birthday! 🥳🎉**\n\n` +
+                            `🌟 May this year bring you unlimited fun,\n` +
+                            `adventures, and epic RP moments in the city! 🚗🔥\n\n` +
+                            `From all of us at **MANGALASHERY ROLEPLAY** —\n` +
+                            `we're glad to have you in our community! ❤️\n\n` +
+                            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                            `🎂 **Date:** ${formatDate(dd, mm)}\n` +
+                            `🏙️ **Server:** MANGALASHERY ROLEPLAY\n` +
+                            `━━━━━━━━━━━━━━━━━━━━━━━━━━`
+                        )
+                        .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
+                        .setImage('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJ5aGF5a2kxMm95M2JpNnB4NTljenZweHpjenJ3aGYwNGI3cmtjayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g5R9dok94mrIvplmZd/giphy.gif')
+                        .setFooter({ text: '🎉 MRP Team | MANGALASHERY ROLEPLAY', iconURL: member.guild.iconURL() })
                         .setTimestamp();
 
-                    await bdayChannel.send({ content: `<@${userId}>`, embeds: [announceEmbed] });
+                    await generalChannel.send({
+                        content: `@everyone 🎂 Today is <@${userId}>'s Birthday! Let's celebrate! 🥳`,
+                        embeds: [wishEmbed]
+                    });
                 }
             }
 
