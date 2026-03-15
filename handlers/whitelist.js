@@ -22,7 +22,7 @@ const pendingApplications = new Map();
 function generateTicket(displayName) {
     return new Promise((resolve, reject) => {
         const outPath = path.join(os.tmpdir(), `ticket_${Date.now()}.png`);
-        const scriptPath = path.join(__dirname, '../assets/generateTicket.py');
+        const scriptPath = path.join(__dirname, '../assets/generateTicket.pyscript');
 
         execFile('python3', [scriptPath, displayName, outPath], (err, stdout, stderr) => {
             if (err) {
