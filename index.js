@@ -5,6 +5,7 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
+
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const config = require('./config');
 
@@ -24,5 +25,8 @@ require('./events/ready')(client);
 require('./events/interactionCreate')(client);
 require('./handlers/welcome')(client);
 
+// ─── Birthday & Referral Checker (runs hourly) ────────────────────────────
+const { startBirthdayChecker } = require('./handlers/birthdayReferral');
+client.once('ready', () => startBirthdayChecker(client));
 
 client.login(config.TOKEN);
