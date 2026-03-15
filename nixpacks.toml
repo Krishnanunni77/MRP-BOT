@@ -1,6 +1,7 @@
-[build]
-builder = "NIXPACKS"
-buildCommand = "npm install && pip install Pillow"
+providers = ["node"]
 
-[deploy]
-startCommand = "node index.js"
+[phases.install]
+cmds = ["npm install", "pip install Pillow"]
+
+[start]
+cmd = "node index.js"
