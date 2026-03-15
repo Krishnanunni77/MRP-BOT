@@ -61,6 +61,22 @@ module.exports = {
         
     },
 
+
+
+        // ─── Birthday & Referral System ───────────────────────────────────────────
+    // 🎂 People channel: where members register their birthday
+    BIRTHDAY_CHANNEL_ID: '1482672319183720488',
+ 
+    // 🎂 Admin channel: birthday reviews + today's birthday alerts
+    BIRTHDAY_ADMIN_CHANNEL_ID: '1482672668137492510',
+ 
+    // 🔗 People channel: where members generate / use referral codes
+    REFERRAL_CHANNEL_ID: '1482672420216373422',
+ 
+    // 🔗 Admin channel: referral use notifications for review & rewards
+    REFERRAL_ADMIN_CHANNEL_ID: '1482672762911985737',
+    // ──
+
     BROADCAST_ALLOWED_ROLES: [
         '1478031525957075145',
         '1478031525948690561',
