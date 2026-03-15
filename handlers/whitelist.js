@@ -5,13 +5,38 @@ const {
     EmbedBuilder,
     ModalBuilder,
     TextInputBuilder,
-    TextInputStyle
+    TextInputStyle,
+    AttachmentBuilder
 } = require('discord.js');
 
 const config = require('../config');
+const { execFile } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
 
 // Store pending message IDs
 const pendingApplications = new Map();
+
+// ─── Generate Ticket Image ────────────────────────────────────────────────────
+function generateTicket(displayName) {
+    return new Promise((resolve, reject) => {
+        const outPath = path.join(os.tmpdir(), `ticket_${Date.now()}.png`);
+        const scriptPath = path.join(__dirname, '../assets/generateTicket.py');
+
+        execFile('python3', [scriptPath, displayName, outPath], (err, stdout, stderr) => {
+            if (err) {
+                console.error('❌ Ticket generation error:', err, stderr);
+                return reject(err);
+            }
+            if (fs.existsSync(outPath)) {
+                resolve(outPath);
+            } else {
+                reject(new Error('Ticket file not created'));
+            }
+        });
+    });
+}
 
 module.exports = async (interaction) => {
 
@@ -22,15 +47,12 @@ module.exports = async (interaction) => {
 
         const member = interaction.member;
 
-        // Must be verified first
         if (!member.roles.cache.has(config.VERIFIED_ROLE_ID))
             return interaction.reply({ content: 'You must verify first.', ephemeral: true });
 
-        // Already whitelisted
         if (member.roles.cache.has(config.WHITELISTED_ROLE_ID))
             return interaction.reply({ content: 'You are already whitelisted.', ephemeral: true });
 
-        // Already pending
         if (pendingApplications.has(member.id))
             return interaction.reply({ content: 'Your visa is already pending.', ephemeral: true });
 
@@ -40,10 +62,10 @@ module.exports = async (interaction) => {
 
         const fields = [
             { id: 'real_name', label: 'Real Name' },
-            { id: 'age', label: 'Age' },
-            { id: 'ign', label: 'In-Game Name (IGN)' },
-            { id: 'email', label: 'Email' },
-            { id: 'rules', label: 'Have you read the rules? (Yes/No)' }
+            { id: 'age',       label: 'Age' },
+            { id: 'ign',       label: 'In-Game Name (IGN)' },
+            { id: 'email',     label: 'Email' },
+            { id: 'rules',     label: 'Have you read the rules? (Yes/No)' }
         ];
 
         fields.forEach(field => {
@@ -68,21 +90,18 @@ module.exports = async (interaction) => {
 
         const member = interaction.member;
 
-        // Add pending role
         await member.roles.add(config.WHITELIST_PENDING_ROLE_ID).catch(() => null);
 
-        // ======================
-        // ADMIN LOG EMBED
-        // ======================
+        // Admin log embed
         const adminEmbed = new EmbedBuilder()
             .setColor('Yellow')
             .setTitle('🛂 Visa Application Review')
             .addFields(
-                { name: 'Applicant', value: `<@${member.id}>` },
+                { name: 'Applicant',      value: `<@${member.id}>` },
                 { name: 'Character Name', value: interaction.fields.getTextInputValue('ign') },
-                { name: 'Real Name', value: interaction.fields.getTextInputValue('real_name') },
-                { name: 'Age', value: interaction.fields.getTextInputValue('age') },
-                { name: 'Email', value: interaction.fields.getTextInputValue('email') },
+                { name: 'Real Name',      value: interaction.fields.getTextInputValue('real_name') },
+                { name: 'Age',            value: interaction.fields.getTextInputValue('age') },
+                { name: 'Email',          value: interaction.fields.getTextInputValue('email') },
                 { name: 'Rules Accepted', value: interaction.fields.getTextInputValue('rules') }
             )
             .setTimestamp();
@@ -102,9 +121,7 @@ module.exports = async (interaction) => {
 
         await logChannel.send({ embeds: [adminEmbed], components: [buttons] });
 
-        // ======================
-        // PENDING CHANNEL EMBED (Simple)
-        // ======================
+        // Pending channel
         const pendingChannel = await interaction.guild.channels.fetch(config.PENDING_CHANNEL_ID);
 
         const pendingEmbed = new EmbedBuilder()
@@ -117,12 +134,32 @@ module.exports = async (interaction) => {
             .setTimestamp();
 
         const pendingMessage = await pendingChannel.send({ embeds: [pendingEmbed] });
-
-        // Store message ID
         pendingApplications.set(member.id, pendingMessage.id);
 
+        // 📩 DM — join waiting VC
+        const applyDmEmbed = new EmbedBuilder()
+            .setColor('Yellow')
+            .setTitle('🛂 Visa Application Received!')
+            .setDescription(
+                `Hey <@${member.id}> 👋\n\n` +
+                `Your **Mangalashery Roleplay Visa Application** has been received and is currently under review.\n\n` +
+                `━━━━━━━━━━━━━━━━━━━━\n` +
+                `📋 **What's Next?**\n\n` +
+                `🔊 Please join the **Waiting Voice Channel** in the server so our staff can attend to you.\n\n` +
+                `<#1478031527634800742>\n\n` +
+                `⏳ Our staff will be with you shortly. Please be patient!\n\n` +
+                `━━━━━━━━━━━━━━━━━━━━\n` +
+                `🏙️ **MANGALASHERY ROLEPLAY** — *The city awaits!*`
+            )
+            .setFooter({ text: 'MANGALASHERY ROLEPLAY | GTA V RP' })
+            .setTimestamp();
+
+        member.send({ embeds: [applyDmEmbed] }).catch(() => {
+            console.log(`⚠️ Could not DM ${member.user.tag} — DMs may be disabled.`);
+        });
+
         return interaction.reply({
-            content: '🟡 Your visa is now pending review.',
+            content: '🟡 Your visa is now pending review. **Please check your DMs for next steps!**',
             ephemeral: true
         });
     }
@@ -137,15 +174,13 @@ module.exports = async (interaction) => {
         const member = await interaction.guild.members.fetch(userId).catch(() => null);
         if (!member) return;
 
-        const pendingChannel = await interaction.guild.channels.fetch(config.PENDING_CHANNEL_ID);
+        const pendingChannel  = await interaction.guild.channels.fetch(config.PENDING_CHANNEL_ID);
         const approvedChannel = await interaction.guild.channels.fetch(config.APPROVED_CHANNEL_ID);
         const rejectedChannel = await interaction.guild.channels.fetch(config.REJECTED_CHANNEL_ID);
 
         const messageId = pendingApplications.get(userId);
 
-        // ======================
-        // ROLE MANAGEMENT
-        // ======================
+        // Role management
         await member.roles.remove(config.WHITELIST_PENDING_ROLE_ID).catch(() => null);
 
         if (action === 'approve') {
@@ -155,11 +190,8 @@ module.exports = async (interaction) => {
             await member.roles.add(config.READMISSION_ROLE_ID).catch(() => null);
         }
 
-        // ======================
-        // SEND FINAL STATUS TO CORRECT CHANNEL
-        // ======================
+        // Status channel
         if (action === 'approve' && approvedChannel) {
-
             const approvedEmbed = new EmbedBuilder()
                 .setColor('Green')
                 .setTitle('🛂 Visa Approved')
@@ -169,11 +201,9 @@ module.exports = async (interaction) => {
                     `Welcome to the city.`
                 )
                 .setTimestamp();
-
             await approvedChannel.send({ embeds: [approvedEmbed] });
 
         } else if (action === 'reject' && rejectedChannel) {
-
             const rejectedEmbed = new EmbedBuilder()
                 .setColor('Red')
                 .setTitle('🛂 Visa Rejected')
@@ -183,16 +213,12 @@ module.exports = async (interaction) => {
                     `You may reapply after review.`
                 )
                 .setTimestamp();
-
             await rejectedChannel.send({ embeds: [rejectedEmbed] });
         }
 
-        // ======================
-        // EDIT PENDING MESSAGE
-        // ======================
+        // Edit pending message
         if (messageId && pendingChannel) {
             const message = await pendingChannel.messages.fetch(messageId).catch(() => null);
-
             if (message) {
                 const updatedEmbed = new EmbedBuilder()
                     .setColor('Grey')
@@ -204,12 +230,84 @@ module.exports = async (interaction) => {
                         `Approved or Rejected by the God of Mangalashery.`
                     )
                     .setTimestamp();
-
                 await message.edit({ embeds: [updatedEmbed] });
             }
         }
 
         pendingApplications.delete(userId);
+
+        // =============================================
+        // 📩 DM — APPROVED with personalised ticket
+        // =============================================
+        if (action === 'approve') {
+
+            const approveDmEmbed = new EmbedBuilder()
+                .setColor('Green')
+                .setTitle('🎉 Visa Approved — Welcome to the City!')
+                .setDescription(
+                    `Hey <@${userId}> 🎊\n\n` +
+                    `Congratulations! Your **Mangalashery Roleplay Visa** has been **APPROVED**! 🟢\n\n` +
+                    `━━━━━━━━━━━━━━━━━━━━\n` +
+                    `🏙️ **You are now a citizen of Mangalashery!**\n\n` +
+                    `🚗 Jump into the server and start your roleplay journey.\n` +
+                    `👮‍♂️ Join a faction, start a business, or create your own story!\n\n` +
+                    `📌 Make sure to follow all server rules to keep your whitelist status.\n\n` +
+                    `━━━━━━━━━━━━━━━━━━━━\n` +
+                    `🎫 Your **MRP Entry Ticket** is attached below!\n` +
+                    `🏁 **The city is waiting for you. See you in-game!**`
+                )
+                .setImage('attachment://mrp_ticket.png')
+                .setFooter({ text: 'MANGALASHERY ROLEPLAY | GTA V RP' })
+                .setTimestamp();
+
+            try {
+                const displayName = member.displayName || member.user.username;
+                const ticketPath  = await generateTicket(displayName);
+                const ticketFile  = new AttachmentBuilder(ticketPath, { name: 'mrp_ticket.png' });
+
+                await member.send({ embeds: [approveDmEmbed], files: [ticketFile] });
+
+                // Clean up temp file
+                fs.unlink(ticketPath, () => {});
+
+            } catch (err) {
+                console.error('⚠️ Ticket generation failed, sending DM without ticket:', err);
+                // Fallback — send without image if Python fails
+                const fallbackEmbed = new EmbedBuilder()
+                    .setColor('Green')
+                    .setTitle('🎉 Visa Approved — Welcome to the City!')
+                    .setDescription(approveDmEmbed.data.description)
+                    .setFooter({ text: 'MANGALASHERY ROLEPLAY | GTA V RP' })
+                    .setTimestamp();
+                await member.send({ embeds: [fallbackEmbed] }).catch(() => null);
+            }
+
+        // =============================================
+        // 📩 DM — REJECTED
+        // =============================================
+        } else if (action === 'reject') {
+
+            const rejectDmEmbed = new EmbedBuilder()
+                .setColor('Red')
+                .setTitle('❌ Visa Rejected')
+                .setDescription(
+                    `Hey <@${userId}> 👋\n\n` +
+                    `Unfortunately, your **Mangalashery Roleplay Visa** has been **REJECTED**. 🔴\n\n` +
+                    `━━━━━━━━━━━━━━━━━━━━\n` +
+                    `📋 **What can you do?**\n\n` +
+                    `🔄 You may reapply after reviewing our rules carefully.\n` +
+                    `📖 Make sure you have read all the server rules before reapplying.\n` +
+                    `❓ If you have questions, reach out to our staff team.\n\n` +
+                    `━━━━━━━━━━━━━━━━━━━━\n` +
+                    `💡 *Don't give up — the city still has a place for you!*`
+                )
+                .setFooter({ text: 'MANGALASHERY ROLEPLAY | GTA V RP' })
+                .setTimestamp();
+
+            member.send({ embeds: [rejectDmEmbed] }).catch(() => {
+                console.log(`⚠️ Could not DM ${member.user.tag} — DMs may be disabled.`);
+            });
+        }
 
         await interaction.message.delete().catch(() => null);
 
@@ -217,6 +315,5 @@ module.exports = async (interaction) => {
             content: `Visa ${action === 'approve' ? 'approved' : 'rejected'}.`,
             ephemeral: true
         });
-
-        }
+    }
 };
