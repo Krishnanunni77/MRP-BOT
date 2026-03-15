@@ -123,6 +123,56 @@ async function setupBirthdayReferralPanels(guild) {
     }
 }
 
+// ─── Send Birthday Wish to General Channel ──────────────────────────────────
+
+async function sendBirthdayWish(guild, userId, birthday) {
+    try {
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member) { console.error(`❌ Member ${userId} not found in guild`); return; }
+
+        const [dd, mm] = birthday.split('-');
+
+        const generalChannel = await guild.channels.fetch(config.GENERAL_CHANNEL_ID).catch(() => null);
+        if (!generalChannel) {
+            console.error('❌ General channel not found! Check GENERAL_CHANNEL_ID in config.js');
+            return;
+        }
+
+        const wishEmbed = new EmbedBuilder()
+            .setColor('#FFD700')
+            .setTitle('🎂 Happy Birthday! 🎉')
+            .setDescription(
+                `╔══════════════════════════╗\n` +
+                `🎊  **BIRTHDAY WISHES**  🎊\n` +
+                `╚══════════════════════════╝\n\n` +
+                `Hey <@${userId}> 🎂\n\n` +
+                `**The entire MRP Team is wishing you a very\n` +
+                `Happy Birthday! 🥳🎉**\n\n` +
+                `🌟 May this year bring you unlimited fun,\n` +
+                `adventures, and epic RP moments in the city! 🚗🔥\n\n` +
+                `From all of us at **MANGALASHERY ROLEPLAY** —\n` +
+                `we're glad to have you in our community! ❤️\n\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `🎂 **Date:** ${formatDate(dd, mm)}\n` +
+                `🏙️ **Server:** MANGALASHERY ROLEPLAY\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━`
+            )
+            .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
+            .setImage('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJ5aGF5a2kxMm95M2JpNnB4NTljenZweHpjenJ3aGYwNGI3cmtjayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g5R9dok94mrIvplmZd/giphy.gif')
+            .setFooter({ text: '🎉 MRP Team | MANGALASHERY ROLEPLAY', iconURL: guild.iconURL() })
+            .setTimestamp();
+
+        await generalChannel.send({
+            content: `@everyone 🎂 Today is <@${userId}>'s Birthday! Let's celebrate! 🥳`,
+            embeds: [wishEmbed]
+        });
+
+        console.log(`✅ Birthday wish sent for user ${userId}`);
+    } catch (err) {
+        console.error('❌ sendBirthdayWish error:', err);
+    }
+}
+
 // ─── Birthday Check Loop (runs every hour) ──────────────────────────────────
 
 function startBirthdayChecker(client) {
@@ -167,39 +217,8 @@ function startBirthdayChecker(client) {
                 // Mark as notified today (reset next day)
                 birthdayRegistry.set(userId, { ...data, notifiedToday: true });
 
-                // 🎉 Announce in GENERAL channel with full MRP team wish
-                const generalChannel = await guild.channels.fetch(config.BROADCAST_CHANNELS.ɢᴇɴᴇʀᴀʟ).catch(() => null);
-                if (generalChannel) {
-                    const [dd, mm] = data.birthday.split('-');
-                    const wishEmbed = new EmbedBuilder()
-                        .setColor('#FFD700')
-                        .setTitle('🎂 Happy Birthday! 🎉')
-                        .setDescription(
-                            `╔══════════════════════════╗\n` +
-                            `🎊  **BIRTHDAY WISHES**  🎊\n` +
-                            `╚══════════════════════════╝\n\n` +
-                            `Hey <@${userId}> 🎂\n\n` +
-                            `**The entire MRP Team is wishing you a very\n` +
-                            `Happy Birthday! 🥳🎉**\n\n` +
-                            `🌟 May this year bring you unlimited fun,\n` +
-                            `adventures, and epic RP moments in the city! 🚗🔥\n\n` +
-                            `From all of us at **MANGALASHERY ROLEPLAY** —\n` +
-                            `we're glad to have you in our community! ❤️\n\n` +
-                            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                            `🎂 **Date:** ${formatDate(dd, mm)}\n` +
-                            `🏙️ **Server:** MANGALASHERY ROLEPLAY\n` +
-                            `━━━━━━━━━━━━━━━━━━━━━━━━━━`
-                        )
-                        .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
-                        .setImage('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJ5aGF5a2kxMm95M2JpNnB4NTljenZweHpjenJ3aGYwNGI3cmtjayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g5R9dok94mrIvplmZd/giphy.gif')
-                        .setFooter({ text: '🎉 MRP Team | MANGALASHERY ROLEPLAY', iconURL: member.guild.iconURL() })
-                        .setTimestamp();
-
-                    await generalChannel.send({
-                        content: `@everyone 🎂 Today is <@${userId}>'s Birthday! Let's celebrate! 🥳`,
-                        embeds: [wishEmbed]
-                    });
-                }
+                // 🎉 Send wish to general channel
+                await sendBirthdayWish(guild, userId, data.birthday);
             }
 
             // Reset notifiedToday at midnight
@@ -354,8 +373,6 @@ module.exports = async (interaction, client) => {
         const data = birthdayRegistry.get(userId);
         if (!data) return interaction.reply({ content: '❌ Registration not found.', ephemeral: true });
 
-        birthdayRegistry.set(userId, { ...data, approved: true });
-
         await interaction.update({
             embeds: [
                 EmbedBuilder.from(interaction.message.embeds[0])
@@ -366,11 +383,21 @@ module.exports = async (interaction, client) => {
             components: []
         });
 
-        // DM user
         const guild = interaction.guild;
+
+        // DM user
         const member = await guild.members.fetch(userId).catch(() => null);
         if (member) {
             member.send(`🎉 Your birthday registration has been **approved** by the MRP admins! You'll receive a special gift on your birthday. 🎂`).catch(() => null);
+        }
+
+        // 🔥 If today IS their birthday, send wish immediately — don't wait for hourly check
+        if (isTodayBirthday(data.birthday)) {
+            console.log(`🎂 Today is ${userId}'s birthday! Sending wish immediately.`);
+            birthdayRegistry.set(userId, { ...data, approved: true, notifiedToday: true });
+            await sendBirthdayWish(guild, userId, data.birthday);
+        } else {
+            birthdayRegistry.set(userId, { ...data, approved: true, notifiedToday: false });
         }
 
         return;
