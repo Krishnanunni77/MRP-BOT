@@ -60,7 +60,7 @@ module.exports = {
         
         
     },
-
+    GENERAL_CHANNEL_ID: '1478031527026884728',
 
 
         // ─── Birthday & Referral System ───────────────────────────────────────────
