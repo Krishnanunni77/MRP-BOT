@@ -1,7 +1,8 @@
 const whitelist = require('../handlers/whitelist');
 const rulesPublisher = require('../handlers/rulesPublisher');
-const verify = require('../handlers/verify'); // 🔥 ADD THIS
+const verify = require('../handlers/verify');
 const broadcast = require('../handlers/broadcast');
+const birthdayReferral = require('../handlers/birthdayReferral');
 
 module.exports = (client) => {
 
@@ -12,6 +13,7 @@ module.exports = (client) => {
             await rulesPublisher(interaction, client);
             await verify(interaction, client);
             await broadcast(interaction, client);
+            await birthdayReferral(interaction, client);
         } catch (error) {
             console.error(error);
         }
