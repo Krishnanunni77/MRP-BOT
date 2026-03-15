@@ -1,0 +1,5 @@
+[build]
+buildCommand = "npm install && pip3 install Pillow"
+
+[deploy]
+startCommand = "node index.js"
