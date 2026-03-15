@@ -1,5 +1,6 @@
-[phases.setup]
-nixPkgs = ["python3", "python3Packages.pip"]
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install && pip install Pillow"
 
-[phases.install]
-cmds = ["npm install", "pip install Pillow"]
+[deploy]
+startCommand = "node index.js"
