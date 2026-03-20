@@ -69,11 +69,11 @@ async function setupBirthdayReferralPanels(guild) {
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('birthday_register')
-                    .setLabel('🎂 Register Birthday')
+                    .setLabel('🎂 REGISTER BIRTHDAY')
                     .setStyle(ButtonStyle.Primary),
                 new ButtonBuilder()
                     .setCustomId('birthday_view')
-                    .setLabel('📅 View My Birthday')
+                    .setLabel('📅 VIEW MY BIRTHDAY')
                     .setStyle(ButtonStyle.Secondary)
             );
 
@@ -90,7 +90,7 @@ async function setupBirthdayReferralPanels(guild) {
         if (!exists) {
             const embed = new EmbedBuilder()
                 .setColor('#00CED1')
-                .setTitle('🔗 Referral System')
+                .setTitle('🔗 REFERRAL SYSTEM')
                 .setDescription(
                     `Invite your friends and earn rewards!\n\n` +
                     `**How it works:**\n` +
@@ -140,7 +140,7 @@ async function sendBirthdayWish(guild, userId, birthday) {
 
         const wishEmbed = new EmbedBuilder()
             .setColor('#FFD700')
-            .setTitle('🎂 Happy Birthday! 🎉')
+            .setTitle('🎂 HAPPY BIRTHDAY! 🎉')
             .setDescription(
                 `╔══════════════════════════╗\n` +
                 `🎊  **BIRTHDAY WISHES**  🎊\n` +
@@ -158,7 +158,7 @@ async function sendBirthdayWish(guild, userId, birthday) {
                 `━━━━━━━━━━━━━━━━━━━━━━━━━━`
             )
             .setThumbnail(member.user.displayAvatarURL({ size: 256 }))
-            .setImage('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJ5aGF5a2kxMm95M2JpNnB4NTljenZweHpjenJ3aGYwNGI3cmtjayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g5R9dok94mrIvplmZd/giphy.gif')
+            .setImage('https://media1.giphy.com/media/v1.Y2lkPTZjMDliOTUyYXdiYWh4aWtvemNxcWxkenZ6NXA0bW91YWR4ZjYweDl3d3FzMGZjdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9rO5Aksmn0dHQKXJAu/giphy.gif')
             .setFooter({ text: '🎉 MRP Team | MANGALASHERY ROLEPLAY', iconURL: guild.iconURL() })
             .setTimestamp();
 
