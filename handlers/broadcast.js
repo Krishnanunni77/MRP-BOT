@@ -110,7 +110,7 @@ module.exports = async (interaction, client) => {
 
         const embed = new EmbedBuilder()
             .setColor('Blue')
-            .setTitle('📢 Official Announcement')
+            .setTitle('<a:announcement:1483518676228509961> Official Announcement')
             .setDescription(message)
             .setFooter({ text: 'Sent by Mangalashery god' })
             .setTimestamp();
